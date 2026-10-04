@@ -1,12 +1,16 @@
-import gradio as gr
+import streamlit as st
 import requests
-import json
 
 # ============================================================
 # 配置区
 # ============================================================
+# 本地 Ollama 用这个地址
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen2.5:7b"
+MODEL_NAME = "qwen2.5:7b-instruct-q4_K_M"
+
+# 如果以后用智谱 API，把上面两行换成：
+# ZHIPU_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+# ZHIPU_API_KEY = "你的API_KEY"
 
 # ============================================================
 # 口播稿改写 Prompt
@@ -48,7 +52,7 @@ def to_oral_script(text):
                 "stream": False,
                 "options": {
                     "num_ctx": 16384,   # 上下文窗口，够处理 1 万字
-                    "temperature": 0.7, # 稍微有点变化，不呆板
+                    "temperature": 0.7,
                 }
             },
             timeout=300  # 长文处理可能慢，给 5 分钟
@@ -65,23 +69,24 @@ def to_oral_script(text):
         return f"出错了：{str(e)}"
 
 # ============================================================
-# Gradio 界面
+# Streamlit 界面
 # ============================================================
-demo = gr.Interface(
-    fn=to_oral_script,
-    inputs=gr.Textbox(
-        lines=20,
-        label="粘贴长文",
-        placeholder="把你的知乎长文、公众号长文、Free Talk 原稿贴在这里……"
-    ),
-    outputs=gr.Markdown(label="口播稿"),
-    title="长文转口播稿工具",
-    description="粘贴长文，自动改写成分块、口语化、带停顿标记的口播稿。本地运行，不联网。",
-    allow_flagging="never"
+st.set_page_config(page_title="长文转口播稿", page_icon="🎙️")
+
+st.title("长文转口播稿工具")
+st.caption("粘贴长文，自动改写成分块、口语化、带停顿标记的口播稿。")
+
+text_input = st.text_area(
+    "粘贴长文",
+    height=300,
+    placeholder="把你的知乎长文、公众号长文、Free Talk 原稿贴在这里……"
 )
 
-# ============================================================
-# 启动
-# ============================================================
-if __name__ == "__main__":
-    demo.launch()
+if st.button("生成口播稿", type="primary"):
+    if not text_input.strip():
+        st.warning("请先粘贴长文。")
+    else:
+        with st.spinner("正在改写，请稍等……"):
+            result = to_oral_script(text_input)
+        st.markdown("---")
+        st.markdown(result)

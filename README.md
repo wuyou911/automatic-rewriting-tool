@@ -14,8 +14,8 @@
 ## 技术栈
 
 - Python
-- Gradio（网页界面）
-- Ollama + Qwen 7B（本地模型）
+- Streamlit（网页界面）
+- Ollama + qwen2.5:7b-instruct-q4_K_M（本地模型）
 
 ## 怎么用
 
@@ -43,15 +43,14 @@ python app.py
 
 ```
 .
-├── app.py          # 主程序
-├── prompt.py       # 拆解 Prompt
+├── main.py          # 主程序
+├── requirements.txt # 安装依赖环境
 └── README.md
 ```
 
 ## 后续计划
 
 - [ ] 支持英文口播稿
-- [ ] 支持日语口播稿
 - [ ] 支持批量处理
 - [ ] 部署到云端，分享给粉丝
 
