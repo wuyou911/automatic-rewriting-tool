@@ -15,7 +15,7 @@
 
 - Python
 - Streamlit（网页界面）
-- Ollama + qwen2.5:7b-instruct-q4_K_M（本地模型）
+- 质谱GLM4.7-Flash云端模型
 
 ## 怎么用
 

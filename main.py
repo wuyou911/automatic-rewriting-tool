@@ -1,16 +1,21 @@
 import streamlit as st
-import requests
+from openai import OpenAI
 
 # ============================================================
 # 配置区
 # ============================================================
-# 本地 Ollama 用这个地址
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen2.5:7b-instruct-q4_K_M"
+# 从 Streamlit 的 Secrets 里读 Key
+# 本地测试时，你可以在项目根目录建一个 .streamlit/secrets.toml 文件
+# 里面写：ZHIPU_API_KEY = "你的Key"
+api_key = st.secrets["ZHIPU_API_KEY"]
 
-# 如果以后用智谱 API，把上面两行换成：
-# ZHIPU_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-# ZHIPU_API_KEY = "你的API_KEY"
+# 初始化智谱客户端（兼容 OpenAI 格式）
+client = OpenAI(
+    api_key=api_key,
+    base_url="https://open.bigmodel.cn/api/paas/v4"
+)
+
+MODEL_NAME = "glm-4.7-flash"  # 免费模型
 
 # ============================================================
 # 口播稿改写 Prompt
@@ -44,27 +49,13 @@ def to_oral_script(text):
     prompt = PROMPT_TEMPLATE.format(text=text)
 
     try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "num_ctx": 16384,   # 上下文窗口，够处理 1 万字
-                    "temperature": 0.7,
-                }
-            },
-            timeout=300  # 长文处理可能慢，给 5 分钟
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
         )
-        response.raise_for_status()
-        result = response.json()
-        return result.get("response", "模型没有返回内容。")
+        return response.choices[0].message.content
 
-    except requests.exceptions.ConnectionError:
-        return "连不上 Ollama。请确认 Ollama 正在运行，并且 qwen2.5:7b 已经拉取。"
-    except requests.exceptions.Timeout:
-        return "处理超时。文章可能太长，试试分段处理。"
     except Exception as e:
         return f"出错了：{str(e)}"
 
