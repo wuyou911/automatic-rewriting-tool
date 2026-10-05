@@ -8,10 +8,10 @@ api_key = st.secrets["ZHIPU_API_KEY"]
 
 client = OpenAI(
     api_key=api_key,
-    base_url="https://open.bigmodel.cn/api/paas/v4"
+    base_url="https://maas.qianwenaiapi.com/compatible-mode/v1"
 )
 
-MODEL_NAME = "glm-4.7-flash"
+MODEL_NAME = "qwen3.8-flash"
 
 # ============================================================
 # 口播稿改写 Prompt
