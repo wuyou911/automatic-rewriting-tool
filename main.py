@@ -74,14 +74,6 @@ text_input = st.text_area(
     placeholder="把你的知乎长文、公众号长文、Free Talk 原稿贴在这里……"
 )
 
-# 每个用户独立的状态
-if "is_processing" not in st.session_state:
-    st.session_state.is_processing = False
-
-# 初始化状态
-if "is_processing" not in st.session_state:
-    st.session_state.is_processing = False
-
 # 按钮：处理中时禁用
 if st.button("生成口播稿", type="primary", disabled=st.session_state.is_processing):
     if not text_input.strip():
