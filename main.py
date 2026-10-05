@@ -4,18 +4,14 @@ from openai import OpenAI
 # ============================================================
 # 配置区
 # ============================================================
-# 从 Streamlit 的 Secrets 里读 Key
-# 本地测试时，你可以在项目根目录建一个 .streamlit/secrets.toml 文件
-# 里面写：ZHIPU_API_KEY = "你的Key"
 api_key = st.secrets["ZHIPU_API_KEY"]
 
-# 初始化智谱客户端（兼容 OpenAI 格式）
 client = OpenAI(
     api_key=api_key,
     base_url="https://open.bigmodel.cn/api/paas/v4"
 )
 
-MODEL_NAME = "glm-4.7-flash"  # 免费模型
+MODEL_NAME = "glm-4.7-flash"
 
 # ============================================================
 # 口播稿改写 Prompt
@@ -52,7 +48,8 @@ def to_oral_script(text):
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.7
+            temperature=0.7,
+            timeout=300
         )
         return response.choices[0].message.content
 
@@ -67,17 +64,25 @@ st.set_page_config(page_title="长文转口播稿", page_icon="🎙️")
 st.title("长文转口播稿工具")
 st.caption("粘贴长文，自动改写成分块、口语化、带停顿标记的口播稿。")
 
+# 初始化状态
+if "is_processing" not in st.session_state:
+    st.session_state.is_processing = False
+
 text_input = st.text_area(
     "粘贴长文",
     height=300,
     placeholder="把你的知乎长文、公众号长文、Free Talk 原稿贴在这里……"
 )
 
-if st.button("生成口播稿", type="primary"):
+if st.button("生成口播稿", type="primary", disabled=st.session_state.is_processing):
     if not text_input.strip():
         st.warning("请先粘贴长文。")
     else:
+        st.session_state.is_processing = True
+
         with st.spinner("正在改写，请稍等……"):
             result = to_oral_script(text_input)
+
+        st.session_state.is_processing = False
         st.markdown("---")
         st.markdown(result)
