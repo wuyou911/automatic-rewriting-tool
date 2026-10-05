@@ -78,15 +78,22 @@ text_input = st.text_area(
 if "is_processing" not in st.session_state:
     st.session_state.is_processing = False
 
+# 初始化状态
+if "is_processing" not in st.session_state:
+    st.session_state.is_processing = False
+
+# 按钮：处理中时禁用
 if st.button("生成口播稿", type="primary", disabled=st.session_state.is_processing):
     if not text_input.strip():
         st.warning("请先粘贴长文。")
     else:
         st.session_state.is_processing = True
+        st.rerun()  # 立刻刷新，按钮变灰
 
-        with st.spinner("正在改写，请稍等……"):
-            result = to_oral_script(text_input)
-
-        st.session_state.is_processing = False
-        st.markdown("---")
-        st.markdown(result)
+# 如果正在处理，显示提示并执行请求
+if st.session_state.is_processing:
+    with st.spinner("正在改写，请稍等……"):
+        result = to_oral_script(text_input)
+    st.session_state.is_processing = False
+    st.markdown("---")
+    st.markdown(result)
